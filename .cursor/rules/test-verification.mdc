@@ -1,0 +1,25 @@
+---
+description: Verify affected tests and build after code changes
+globs: "**"
+alwaysApply: true
+---
+
+# Test and build verification after code changes
+
+- After modifying any source file, identify tests that exercise the changed code (e.g. via imports, component renders, or hook usage).
+- Run those tests to confirm they still pass.
+- **Before considering the task complete, run the full test suite** — not only affected tests. Use `npm run testCi` (matches CI, includes coverage) or `npm run test -- run`.
+- If a test fails because of the change (e.g. a renamed prop, removed export, or changed behaviour), update the test to match the new code.
+- Re-run the updated tests, then re-run the full suite to verify the fix before considering the task complete.
+- Run `npx tsc --noEmit --project tsconfig.app.json` to verify there are no TypeScript build errors before considering the task complete.
+- When adding or modifying source code, ensure test coverage for the affected files stays at or above 70%. Write new tests if needed. Run `npx vitest run --pool=forks --coverage` and check the coverage summary to confirm no file drops below the threshold before considering the task complete.
+
+## Keeping instruction files in sync
+
+This project maintains AI coding assistant instructions in three places:
+
+- **VS Code / GitHub Copilot**: `.github/instructions/*.instructions.md`
+- **Cursor**: `.cursor/rules/*.mdc`
+- **Claude Code**: `CLAUDE.md`
+
+When modifying any instruction file, apply the same change to all three locations so they stay consistent.

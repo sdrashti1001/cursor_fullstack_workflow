@@ -1,0 +1,32 @@
+---
+alwaysApply: true
+applyTo: "**"
+description: General Copilot project guidelines
+---
+
+# Copilot Instructions for sync.onboarding
+
+## Temporary Agent Output Files
+
+When performing operations that generate temporary output files (test results, logs, analysis reports, etc.), place these files in the `tempAgentOutput/` folder at the project root instead of the project root itself.
+
+This keeps the working directory clean and prevents accidental commits of ephemeral files.
+
+**Example:**
+
+- Do not place files in root: `test_results.txt` → Place in: `tempAgentOutput/test_results.txt`
+- Do not place files in root: `debug_log.txt` → Place in: `tempAgentOutput/debug_log.txt`
+
+All files in `tempAgentOutput/` are git-ignored and should never be committed.
+
+Prefer `String#replaceAll()` over `String#replace()`.
+
+## Keeping instruction files in sync
+
+This project maintains AI coding assistant instructions in three places:
+
+- **VS Code / GitHub Copilot**: `.github/instructions/*.instructions.md`
+- **Cursor**: `.cursor/rules/*.mdc`
+- **Claude Code**: `CLAUDE.md`
+
+When modifying any instruction file, apply the same change to all three locations so they stay consistent.
