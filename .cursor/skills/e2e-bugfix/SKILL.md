@@ -23,4 +23,4 @@ Report only FLAG/FAIL. Top 2 production risks.
 What | Root Cause (which layer) | Fix | Contract Changes | Testing | Files
 
 ### Step 6 — Retrospective
-Three actionable takeaways (one line each).
+Three actionable takeaways (one line each). If a takeaway is a reusable pattern (not ticket-specific), append it to `.cursor/rules/learnings.mdc`.

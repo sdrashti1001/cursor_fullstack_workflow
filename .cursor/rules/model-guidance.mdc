@@ -1,0 +1,55 @@
+---
+description: Advisory model-tier guidance tied to solve-ticket's complexity levels
+globs: "**"
+alwaysApply: true
+---
+
+# Model Guidance
+
+Cursor does not switch models mid-session automatically — this is advisory
+for you (the developer) when picking a model per chat/mode, not something an
+agent can enforce on itself. Use it as a rule of thumb, not a hard gate.
+
+## By complexity (from solve-ticket's classification)
+
+- **SIMPLE** — fast/cheap model is usually enough. Pattern-following, 1-2
+  files, no new decisions.
+- **STANDARD** — mid-tier "balanced" model. Cross-component work, needs to
+  verify existing patterns before extending them.
+- **COMPLEX** — strongest available reasoning model. New patterns,
+  cross-cutting, multi-layer impact — this is where a wrong architectural
+  call is expensive to unwind later.
+
+## By phase, if planning/implementation are split
+
+If you're using the `plan-ticket` / `Implement` split
+(`.cursor/skills/plan-ticket/SKILL.md`):
+
+- **Planning pass** — favor a stronger reasoning model even for
+  STANDARD-complexity tickets. Mistakes here (wrong API contract, missed
+  constraint) propagate into every later step and are expensive to catch
+  after implementation has started.
+- **Implementation pass** — the plan file already carries the hard
+  decisions, so a faster/cheaper model can often execute it — bump up only
+  if the plan itself flags open questions or the ticket is COMPLEX.
+- **Retrospective / PR description** — cheapest model available. Low risk,
+  low reasoning depth, mostly summarization.
+
+## Signals to override the default upward, regardless of complexity
+
+- Auth, payments, or PII touched anywhere in the diff.
+- Ticket references a prior incident or "intermittent"/"flaky" symptom
+  (usually concurrency — needs deeper reasoning than the file count suggests).
+- You're already on a second failed attempt at the same fix (see the
+  Circuit Breaker rule in `project-rules.mdc`) — escalate model tier before
+  trying a third time, not after.
+
+## Keeping instruction files in sync
+
+This project maintains AI coding assistant instructions in three places:
+
+- **VS Code / GitHub Copilot**: `.github/instructions/*.instructions.md`
+- **Cursor**: `.cursor/rules/*.mdc`
+- **Claude Code**: `CLAUDE.md`
+
+When modifying any instruction file, apply the same change to all three locations so they stay consistent.

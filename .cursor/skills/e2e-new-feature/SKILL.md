@@ -33,4 +33,4 @@ Top 3 production risks. **Fix all FAILs/FLAGs.**
 What | API Contract | How | Testing | Files (FE/BE) | AC ✅
 
 ### Step 9 — Retrospective
-Three actionable takeaways (one line each).
+Three actionable takeaways (one line each). If a takeaway is a reusable pattern (not ticket-specific), append it to `.cursor/rules/learnings.mdc`.

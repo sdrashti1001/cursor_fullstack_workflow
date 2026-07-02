@@ -17,6 +17,30 @@ Fetches the ticket, classifies layer/type/complexity, runs the right skill, comm
 
 ---
 
+## Plan first, then implement separately
+
+```
+Plan ES-1838
+```
+
+Runs fetch + classify + orient/plan only, via the `plan-ticket` skill. Writes
+`tempAgentOutput/plan-ES-1838.md` and stops — no code changes. Review or edit
+that file, then:
+
+```
+Implement ES-1838
+```
+
+Reads the plan file and starts `solve-ticket` straight at the Implement step
+of the mapped skill, skipping re-derivation of Phase 1/2 and orient/plan.
+
+Useful for STANDARD/COMPLEX tickets where you want a checkpoint before any
+code is touched, or when planning and implementing in separate sessions (see
+"New chat vs same chat" below). For SIMPLE tickets `Solve ES-1838` alone is
+usually faster — the split adds a review step you may not need.
+
+---
+
 ## Implement + auto-review
 
 ```
@@ -117,6 +141,7 @@ For edge cases where you don't want the orchestrator, invoke skills directly:
 
 | Skill | When to use |
 |---|---|
+| `plan-ticket` | You want a reviewable plan file before any code changes — see "Plan first, then implement separately" above |
 | `fe-new-feature` | You already know it's an FE feature, ticket context pasted manually |
 | `fe-bugfix` | Quick bug fix, context pasted manually |
 | `fe-pr-review` | Just want a code review, no ticket context needed |

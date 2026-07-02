@@ -47,4 +47,4 @@ List top 3 production risks.
 What | How | Testing | Files changed | AC ✅
 
 ### Step 8 — Retrospective
-Three actionable takeaways (one line each).
+Three actionable takeaways (one line each). If a takeaway is a reusable pattern (not ticket-specific), append it to `.cursor/rules/learnings.mdc`.

@@ -11,12 +11,16 @@ Determine what the user is asking and route accordingly:
 | User input | Route |
 |---|---|
 | `Solve [TICKET-ID]` | → Phase 1 (fetch) → Phase 2 (classify) → Phase 3 (execute) → Phase 4 (commit) |
+| `Plan [TICKET-ID]` | → hand off to the `plan-ticket` skill. Produces `tempAgentOutput/plan-[TICKET-ID].md`, no code changes. Does not continue into this skill. |
+| `Implement [TICKET-ID]` | → **Plan handoff.** If `tempAgentOutput/plan-[TICKET-ID].md` exists, read it and skip straight to Phase 3, starting the mapped skill at its Implement step (Phase 1/2 and the orient/plan step are already in the plan file). If the file does NOT exist, treat identically to `Solve [TICKET-ID]`. |
 | `Review` or `Review it` or `Run code review` | → Phase 3 directly with type=**code-review** (ticket context already in conversation or re-fetch if new chat) |
 | PR comments pasted (look for file paths, line numbers, reviewer names) | → Phase 3 directly with type=**pr-fixes** |
 | `Solve [TICKET-ID] then review` | → Full pipeline, then auto-chain code-review after commit |
 | `Fix PR comments for [TICKET-ID]` + comments pasted | → Phase 1 (fetch) → Phase 3 with type=**pr-fixes** |
 
 **Follow-up detection:** If ticket context already exists in this conversation (from a previous `Solve`), skip Phase 1. If not, run Phase 1 first.
+
+**Plan/Implement split:** `solve-ticket` still works standalone end-to-end via `Solve [TICKET-ID]` — the split below is optional, not required. Use it when you want a reviewable checkpoint before any code changes: run `Plan [TICKET-ID]` (via `plan-ticket`) first, review or edit the resulting plan file, then run `Implement [TICKET-ID]` here to execute it.
 
 ---
 
@@ -71,11 +75,24 @@ Print: `LAYER: [x] | TYPE: [x] | COMPLEXITY: [x] | SKILL: [x]`
 
 If ambiguous — ask. If skill folder missing — ask.
 
+### Feature-flag modifier (orthogonal)
+If the ticket mentions "flag", "rollout", "gate", or "kill switch", also
+apply `.cursor/skills/feature-flag-rollout/SKILL.md` alongside the mapped
+skill above — it covers flag-specific steps only, not the whole ticket.
+
 ---
 
 ## Phase 3 — Execute
 
 Read `.cursor/skills/[skill]/SKILL.md` for the step-by-step workflow.
+
+**Plan file check:** if `tempAgentOutput/plan-[TICKET-ID].md` exists, read it
+first. It already contains Phase 1/2 output plus the skill's Orient and
+Plan/Define-Contract output. Do not redo those steps — start the skill
+directly at its Implement step, using the plan file's content as if it were
+just produced in this conversation. If the plan file's classification
+disagrees with what you'd derive now, or a Constraint looks stale, flag it
+and confirm before proceeding rather than silently overriding either source.
 
 **Apply complexity gates before following those steps:**
 
