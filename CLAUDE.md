@@ -17,9 +17,11 @@ complexity (SIMPLE/STANDARD/COMPLEX), then routes to the matching skill file.
 Read `.cursor/skills/solve-ticket/SKILL.md` for the full routing table before
 starting ticket work.
 
-For a reviewable plan before any code changes, use `.cursor/skills/plan-ticket/SKILL.md`
-first — it produces `tempAgentOutput/plan-[TICKET-ID].md` and stops. See that
-file's "Handoff" section for continuing into implementation.
+`solve-ticket` auto-splits based on file count: a 1-file ticket runs fully
+inline; a 2+ file ticket stops after planning via
+`.cursor/skills/plan-ticket/SKILL.md`, producing
+`tempAgentOutput/plan-[TICKET-ID].md` — review it, then continue in a new
+chat with `Implement [TICKET-ID]`. See that file's "Handoff" section.
 
 ## Honesty
 

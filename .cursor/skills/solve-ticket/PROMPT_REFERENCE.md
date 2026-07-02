@@ -4,40 +4,29 @@
 
 ---
 
-## Implement a ticket
+## Implement a ticket — automatic plan/implement split
 
 ```
 Solve ES-1838
 ```
-```
-Solve ES-2035
-```
 
-Fetches the ticket, classifies layer/type/complexity, runs the right skill, commits.
-
----
-
-## Plan first, then implement separately
-
-```
-Plan ES-1838
-```
-
-Runs fetch + classify + orient/plan only, via the `plan-ticket` skill. Writes
-`tempAgentOutput/plan-ES-1838.md` and stops — no code changes. Review or edit
-that file, then:
+is all you need to type. `solve-ticket` fetches the ticket, classifies
+layer/type/complexity, then decides for you (Phase 2.5): a 1-file ticket
+runs fully inline, end to end, in this chat — orient, plan, implement,
+test, self-review, commit. A 2+ file ticket instead writes
+`tempAgentOutput/plan-ES-1838.md` and stops — you review/edit the plan, then
+open a **new chat** and run:
 
 ```
 Implement ES-1838
 ```
 
-Reads the plan file and starts `solve-ticket` straight at the Implement step
-of the mapped skill, skipping re-derivation of Phase 1/2 and orient/plan.
+which reads the plan file and starts straight at the Implement step of the
+mapped skill, skipping re-derivation of Phase 1/2 and orient/plan.
 
-Useful for STANDARD/COMPLEX tickets where you want a checkpoint before any
-code is touched, or when planning and implementing in separate sessions (see
-"New chat vs same chat" below). For SIMPLE tickets `Solve ES-1838` alone is
-usually faster — the split adds a review step you may not need.
+You don't choose which path runs — the file count decides it. To override
+(force inline on a bigger ticket, or force a checkpoint on a 1-file one),
+call `Plan ES-1838` / `Implement ES-1838` directly instead of `Solve`.
 
 ---
 
@@ -48,6 +37,8 @@ Solve ES-1838 then review
 ```
 
 Implements the feature, commits, then automatically runs code review on the branch diff. Fixes any Critical/High findings before finishing.
+
+If the ticket turns out to be 2+ files, the auto-split gate stops this chat after planning — "then review" doesn't run here. It's saved into the plan file's `## Chain` field instead, and runs automatically after `Implement ES-1838`'s own commit step in the new chat.
 
 ---
 
@@ -141,7 +132,7 @@ For edge cases where you don't want the orchestrator, invoke skills directly:
 
 | Skill | When to use |
 |---|---|
-| `plan-ticket` | You want a reviewable plan file before any code changes — see "Plan first, then implement separately" above |
+| `plan-ticket` | You want a reviewable plan file before any code changes — see "Implement a ticket — automatic plan/implement split" above |
 | `fe-new-feature` | You already know it's an FE feature, ticket context pasted manually |
 | `fe-bugfix` | Quick bug fix, context pasted manually |
 | `fe-pr-review` | Just want a code review, no ticket context needed |
@@ -157,7 +148,7 @@ For edge cases where you don't want the orchestrator, invoke skills directly:
 
 **Token efficiency:** For simple tickets, the orchestrator auto-classifies as SIMPLE and skips heavy steps (pattern research, verbose planning, retrospective). You don't need to tell it — it decides based on ticket scope.
 
-**New chat vs same chat:** Chaining in the same chat is convenient (context carries forward) but costs more tokens. For large tickets, start a new chat for each phase.
+**New chat vs same chat:** For 2+ file tickets, Phase 2.5 stops after planning and expects you to open a new chat for `Implement` — this keeps the implementation agent's context clean and cheaper. For 1-file tickets everything stays in one chat automatically.
 
 **PR comments format:** The orchestrator recognizes PR comments by looking for file paths, line numbers, and reviewer-style text. Include the file name and line context for best results.
 

@@ -10,17 +10,17 @@ Determine what the user is asking and route accordingly:
 
 | User input | Route |
 |---|---|
-| `Solve [TICKET-ID]` | → Phase 1 (fetch) → Phase 2 (classify) → Phase 3 (execute) → Phase 4 (commit) |
+| `Solve [TICKET-ID]` | → Phase 1 (fetch) → Phase 2 (classify) → Phase 2.5 (auto-split gate) → Phase 3 (execute) → Phase 4 (commit) |
 | `Plan [TICKET-ID]` | → hand off to the `plan-ticket` skill. Produces `tempAgentOutput/plan-[TICKET-ID].md`, no code changes. Does not continue into this skill. |
 | `Implement [TICKET-ID]` | → **Plan handoff.** If `tempAgentOutput/plan-[TICKET-ID].md` exists, read it and skip straight to Phase 3, starting the mapped skill at its Implement step (Phase 1/2 and the orient/plan step are already in the plan file). If the file does NOT exist, treat identically to `Solve [TICKET-ID]`. |
 | `Review` or `Review it` or `Run code review` | → Phase 3 directly with type=**code-review** (ticket context already in conversation or re-fetch if new chat) |
 | PR comments pasted (look for file paths, line numbers, reviewer names) | → Phase 3 directly with type=**pr-fixes** |
-| `Solve [TICKET-ID] then review` | → Full pipeline, then auto-chain code-review after commit |
+| `Solve [TICKET-ID] then review` | → Full pipeline, then auto-chain code-review after Phase 4. If the ticket auto-splits (Phase 2.5), the chain does not run in this chat — it's carried into the plan file instead. See "Chaining" below. |
 | `Fix PR comments for [TICKET-ID]` + comments pasted | → Phase 1 (fetch) → Phase 3 with type=**pr-fixes** |
 
 **Follow-up detection:** If ticket context already exists in this conversation (from a previous `Solve`), skip Phase 1. If not, run Phase 1 first.
 
-**Plan/Implement split:** `solve-ticket` still works standalone end-to-end via `Solve [TICKET-ID]` — the split below is optional, not required. Use it when you want a reviewable checkpoint before any code changes: run `Plan [TICKET-ID]` (via `plan-ticket`) first, review or edit the resulting plan file, then run `Implement [TICKET-ID]` here to execute it.
+`Solve [TICKET-ID]` is the only command you need to type for new work — Phase 2.5 decides automatically whether to run end-to-end inline or stop after planning. `Plan [TICKET-ID]` / `Implement [TICKET-ID]` remain available as manual overrides: force a checkpoint on a ticket that would otherwise run inline, force a bigger ticket to run inline, or deliberately use the restricted Planner custom mode (see Phase 2.5).
 
 ---
 
@@ -58,11 +58,15 @@ CONSTRAINTS: [list]
 - **task-review** → "verify/validate" against AC
 
 ### Complexity
-| Level | Signals |
-|---|---|
-| **SIMPLE** | 1-2 files, single component, clear what to do, no new patterns needed |
-| **STANDARD** | 2-5 files, some cross-component work, need to verify patterns |
-| **COMPLEX** | 5+ files, new patterns, cross-cutting, multi-layer impact |
+Estimate file count from the ticket description — this is a pre-Orient guess,
+not measured fact. State a number anyway; Phase 3's Orient step is where it
+gets confirmed or corrected (see Phase 2.5's reality check).
+
+| Level | Files | Signals |
+|---|---|---|
+| **SIMPLE** | 1 | Single component, clear what to do, no new patterns needed |
+| **STANDARD** | 2-5 | Some cross-component work, need to verify patterns |
+| **COMPLEX** | 5+ | New patterns, cross-cutting, multi-layer impact |
 
 ### Skill map
 | | bugfix | new-feature | code-review | pr-fixes | task-review |
@@ -71,7 +75,7 @@ CONSTRAINTS: [list]
 | BE | be-bugfix | be-new-feature | be-code-review | be-pr-fixes | — |
 | E2E | e2e-bugfix | e2e-new-feature | e2e-code-review | — | — |
 
-Print: `LAYER: [x] | TYPE: [x] | COMPLEXITY: [x] | SKILL: [x]`
+Print: `LAYER: [x] | TYPE: [x] | COMPLEXITY: [x] | FILES: [n] | SKILL: [x]`
 
 If ambiguous — ask. If skill folder missing — ask.
 
@@ -79,6 +83,36 @@ If ambiguous — ask. If skill folder missing — ask.
 If the ticket mentions "flag", "rollout", "gate", or "kill switch", also
 apply `.cursor/skills/feature-flag-rollout/SKILL.md` alongside the mapped
 skill above — it covers flag-specific steps only, not the whole ticket.
+
+---
+
+## Phase 2.5 — Auto-split gate
+
+| FILES (from Phase 2) | Route |
+|---|---|
+| **1** (SIMPLE) | Continue to Phase 3 in this chat — plan and implement happen together. |
+| **2+** (STANDARD/COMPLEX) | Hand off to `.cursor/skills/plan-ticket/SKILL.md` Phase 3-4 (Orient + Plan, write the plan file) instead of continuing here. STOP once the plan file is saved — do not implement in this chat. |
+
+Model and Cursor-mode choice are not something this skill can set for you —
+see `.cursor/rules/model-guidance.mdc` for which tier to use per phase, and
+`.cursor/context/custom-mode-planner.md` for the restricted Planner mode
+(high-risk tickets only — it has no edit tool, so it can only be chosen
+deliberately before you start, never entered mid-split).
+
+On split, print: `📋 [ID] — [n] files, plan saved → tempAgentOutput/plan-[TICKET-ID].md | Open a NEW chat and run: Implement [TICKET-ID] | Model/mode: see model-guidance.mdc`
+
+**Chain carry-over:** if a chain instruction was given (e.g. `Solve ES-1838
+then review`) and the ticket splits, write it into the plan file's `## Chain`
+field instead of running it here — `Implement [TICKET-ID]` executes it after
+its own Phase 4. See "Chaining" below.
+
+**Estimate-vs-reality check (inline path only):** if Phase 3's Orient step
+reveals the ticket actually touches 2+ files despite a SIMPLE classification,
+stop, flag the mismatch, and confirm with the user before proceeding rather
+than silently continuing past the point the split should have triggered.
+
+Override the route only on explicit instruction (e.g. "solve this inline
+even though it touches 3 files", or "always split, even for 1-file tickets").
 
 ---
 
@@ -93,11 +127,13 @@ directly at its Implement step, using the plan file's content as if it were
 just produced in this conversation. If the plan file's classification
 disagrees with what you'd derive now, or a Constraint looks stale, flag it
 and confirm before proceeding rather than silently overriding either source.
+If the plan file has a `## Chain` field set, treat it as if that instruction
+were given now — run it after Phase 4 (see "Chaining").
 
 **Apply complexity gates before following those steps:**
 
 ### SIMPLE — fast track
-- **Orient:** Read ONLY the target file(s) you will modify. Run ONE grep/search to check if what you're building already exists. Note patterns from the target file itself. Do NOT read other screens.
+- **Orient:** Read ONLY the target file you will modify. Run ONE grep/search to check if what you're building already exists. Note patterns from the target file itself. Do NOT read other screens.
 - **Plan:** 2-3 bullets. Do NOT wait for confirmation.
 - **Implement:** Full — follow all self-check items (testIds, 4 states, reuse, etc.).
 - **Tests:** Happy path per AC + one edge case. Read ONE existing test file for style.
@@ -146,7 +182,8 @@ Print: `✅ [ID] done | Branch: [x] | Files: [list] | → git push -u origin [br
 
 ## Chaining — after Phase 4 completes
 
-If the original input included a chain instruction (e.g. "Solve ES-1838 then review"):
+If the original input included a chain instruction (e.g. "Solve ES-1838 then
+review"), OR the plan file being executed has a `## Chain` field set:
 
 1. Print: `--- CHAINING: code-review ---`
 2. Set type = code-review, keep same layer and ticket context.

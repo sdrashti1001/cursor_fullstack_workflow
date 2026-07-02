@@ -12,8 +12,8 @@ agent can enforce on itself. Use it as a rule of thumb, not a hard gate.
 
 ## By complexity (from solve-ticket's classification)
 
-- **SIMPLE** — fast/cheap model is usually enough. Pattern-following, 1-2
-  files, no new decisions.
+- **SIMPLE** — fast/cheap model is usually enough. Pattern-following, 1
+  file, no new decisions.
 - **STANDARD** — mid-tier "balanced" model. Cross-component work, needs to
   verify existing patterns before extending them.
 - **COMPLEX** — strongest available reasoning model. New patterns,
@@ -22,8 +22,9 @@ agent can enforce on itself. Use it as a rule of thumb, not a hard gate.
 
 ## By phase, if planning/implementation are split
 
-If you're using the `plan-ticket` / `Implement` split
-(`.cursor/skills/plan-ticket/SKILL.md`):
+Applies whenever a ticket auto-splits (`solve-ticket`'s Phase 2.5, any
+STANDARD/COMPLEX ticket) or you invoke `plan-ticket` /
+`Implement [TICKET-ID]` manually:
 
 - **Planning pass** — favor a stronger reasoning model even for
   STANDARD-complexity tickets. Mistakes here (wrong API contract, missed
