@@ -17,6 +17,8 @@ Determine what the user is asking and route accordingly:
 | PR comments pasted (look for file paths, line numbers, reviewer names) | → Phase 3 directly with type=**pr-fixes** |
 | `Solve [TICKET-ID] then review` | → Full pipeline, then auto-chain code-review after Phase 4. If the ticket auto-splits (Phase 2.5), the chain does not run in this chat — it's carried into the plan file instead. See "Chaining" below. |
 | `Fix PR comments for [TICKET-ID]` + comments pasted | → Phase 1 (fetch) → Phase 3 with type=**pr-fixes** |
+| `Verify [TICKET-ID]` or `Validate AC for [TICKET-ID]` | → Phase 1 (fetch, if not already in context) → Phase 2 (classify layer only) → Phase 3 directly with type=**task-review**. If the resolved layer has no task-review skill (BE and E2E currently don't — see Skill map), say so and offer `Review` (code-quality diff) as the closest available alternative instead of guessing. |
+| Multiple ticket IDs in one input (e.g. `Solve ES-1 and ES-2`) | → Do **not** combine into one run — a ticket owns one branch, one commit, one plan file, and "only touch files in scope for this ticket" doesn't hold across two tickets at once. Ask which to run first, or confirm running sequentially: fully complete one (through Phase 4, or through the Phase 2.5 stop) before starting the next. Never interleave. |
 
 **Follow-up detection:** If ticket context already exists in this conversation (from a previous `Solve`), skip Phase 1. If not, run Phase 1 first.
 

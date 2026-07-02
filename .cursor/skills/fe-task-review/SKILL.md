@@ -2,49 +2,43 @@
 
 Review implementation against the ticket's Gherkin acceptance criteria.
 
-For each scenario:
+## Pre-review
+```bash
+cmd /c "npx tsc --noEmit --project tsconfig.app.json"
+cmd /c "npx vitest run --pool=forks --coverage"
+```
+Type-check and test run are mechanical, not a judgment call — if either
+fails, note it up front; it doesn't block the AC review below but it's a
+blocker for merge regardless of AC status.
+
+## AC scenarios
+
+For each Gherkin scenario in the ticket:
 - **Satisfied** / **Partially Satisfied** / **Not Satisfied**
 - Relevant code location
 - Missing functionality
 - Tests needed to verify
 
-Please provide a detailed review report covering the following:
+## Report
 
 1. **Implementation Verification**
-
-   * Verify that all commits correctly implement the required functionality for the ticket.
-   * Check whether the implementation aligns with the expected behavior and requirements.
+   - Verify that all commits correctly implement the required functionality for the ticket.
+   - Check whether the implementation aligns with the expected behavior and requirements.
 
 2. **Gap Analysis**
+   - Identify any missing functionality, incomplete implementation, or deviations from the expected behavior.
+   - Highlight any unnecessary or extra code that has been introduced but is not required (dead code, unused exports, commented-out code).
 
-   * Identify any missing functionality, incomplete implementation, or deviations from the expected behavior.
-   * Highlight any unnecessary or extra code that has been introduced but is not required.
-
-3. **Feature Flag Validation**
-
-   * **When the feature flag is OFF:**
-
-     * Verify that the existing MIS onboarding flow behaves exactly as before.
-     * Ensure there are no regressions or behavioral changes in the existing onboarding process.
-
-   * **When the feature flag is ON:**
-
-     * Verify that the new Change MIS Connection flow works correctly.
-     * Ensure all existing flows continue to function without any regressions, including:
-
-       * Non-manual import mis onboarding flow
-       * Manual import mis onboarding flow
+3. **Feature Flag Validation** (only if the ticket touches a flag — see `.cursor/skills/feature-flag-rollout/SKILL.md`)
+   - **Flag OFF:** existing behavior is unchanged — no regressions.
+   - **Flag ON:** new behavior works correctly, and all other existing flows the flag doesn't target still function without regressions.
 
 4. **Regression Analysis**
+   - If this change reuses existing components or logic, verify those shared changes don't introduce regressions or unintended side effects elsewhere in the app.
 
-   * Since the Change MIS Connection flow reuses several existing components and logic, verify that these shared changes do not introduce regressions or unintended side effects in any existing functionality.
-
-5. **Final Report**
-
-   * Provide a comprehensive summary including:
-
-     * ✅ Correctly implemented changes
-     * ❌ Missing functionality or gaps
-     * ⚠️ Potential risks or edge cases
-     * 🧹 Unnecessary or extra code
-     * 💡 Recommendations for improvements before the branch is merged
+5. **Final Report** — comprehensive summary including:
+   - ✅ Correctly implemented changes
+   - ❌ Missing functionality or gaps
+   - ⚠️ Potential risks or edge cases
+   - 🧹 Unnecessary or extra code
+   - 💡 Recommendations for improvements before the branch is merged

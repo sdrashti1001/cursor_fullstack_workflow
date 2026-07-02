@@ -98,7 +98,7 @@ Verify ES-1838
 Validate AC for ES-1838
 ```
 
-Checks the current implementation against the ticket's Gherkin scenarios. Marks each as Satisfied / Partially Satisfied / Not Satisfied.
+Checks the current implementation against the ticket's Gherkin scenarios. Marks each as Satisfied / Partially Satisfied / Not Satisfied, runs the type-check and test suite as a mechanical prerequisite, and flags dead code and regression risk on shared components. FE-only for now — for a BE or E2E ticket, this falls back to suggesting `Review` instead.
 
 ---
 
