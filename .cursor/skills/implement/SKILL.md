@@ -91,14 +91,11 @@ commented-out code, TODOs, secrets).
 
 ---
 
-## Step 6 — Branch & commit
+## Step 6 — Git (none)
 
-```bash
-cmd /c "git checkout -b [type]/[TICKET-ID]-short-desc"
-cmd /c "git add -A -- ":!.env*" ":!.gitignore" ":!.cursor/mcp.json""
-cmd /c "git commit -m \"[type](TICKET-ID): [desc]\""
-```
-Do NOT push.
+No git commands of any kind — no branch creation, staging, commit, or push.
+Leave the working tree exactly as the file edits produced it. Branching,
+staging, committing, and pushing are all done manually by the user.
 
 ---
 
@@ -121,5 +118,6 @@ Print short report:
 ```
 ✅ [TICKET-ID] done | Type: [x] | Branch: [x] | Files: [list]
 Tests: PASS (coverage X%) | Type-check: PASS
+Changes are uncommitted — review and commit manually.
 → Review [TICKET-ID]
 ```
