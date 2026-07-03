@@ -11,12 +11,18 @@ size or complexity — there is no auto-split or inline fast-track.
 
 ## Phase 1 — Fetch Context
 
-```bash
-cmd /c "node scripts/fetch-jira.cjs [TICKET-ID]"
-```
-Read `tempAgentOutput/ticket-context.md`. Extract every **Must NOT** /
-exclusion / constraint from the epic, and the full Gherkin acceptance
-criteria (needed later by `review`).
+Use the connected Jira MCP to fetch the ticket, its parent, and its epic —
+do not use `scripts/fetch-jira.cjs`. Pull: summary, issue type, parent,
+epic, description, full Gherkin acceptance criteria, and any epic-level
+constraints/exclusions.
+
+Write what you fetched to `tempAgentOutput/ticket-context.md` in the same
+shape the old script produced (so downstream steps and `review` can read it
+consistently), then extract every **Must NOT** / exclusion / constraint
+from the epic.
+
+If no Jira MCP tool is available in this session, stop and tell the user —
+do not fall back to the script silently.
 
 Print:
 ```
