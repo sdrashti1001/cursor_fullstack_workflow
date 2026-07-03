@@ -1,0 +1,43 @@
+---
+description: Accumulated cross-ticket learnings from retrospectives
+globs: "**"
+alwaysApply: true
+---
+
+# Learnings
+
+Reusable takeaways captured from ticket retrospectives — patterns worth applying
+proactively on future tickets, not just noted once and forgotten.
+
+## How this file grows
+
+At the end of any skill's Retrospective step, if a takeaway describes a
+**reusable pattern** (would help on a *different* ticket, not just this one),
+append it below as one line under the right heading. Ticket-specific notes
+stay in the PR description — they do not belong here.
+
+Keep entries terse (one line, imperative or observational). If an entry is
+superseded or contradicted by a later one, remove the stale entry instead of
+stacking both.
+
+## FE
+
+<!-- e.g. "ConnectionCard-style components: always destructure API response, never spread it into local state." -->
+
+## BE
+
+<!-- e.g. "Pagination endpoints: default page size must match the FE's fetch hook default or the empty state flashes." -->
+
+## Cross-cutting / process
+
+<!-- e.g. "Tickets tagged 'MIS onboarding' almost always touch both the flag check AND the legacy fallback path — check both from the start." -->
+
+## Keeping instruction files in sync
+
+This project maintains AI coding assistant instructions in three places:
+
+- **VS Code / GitHub Copilot**: `.github/instructions/*.instructions.md`
+- **Cursor**: `.cursor/rules/*.mdc`
+- **Claude Code**: `CLAUDE.md`
+
+When modifying any instruction file, apply the same change to all three locations so they stay consistent.
