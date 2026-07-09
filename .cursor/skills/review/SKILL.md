@@ -20,7 +20,7 @@ session), fetch fresh:
 ```bash
 cmd /c "node scripts/fetch-jira.cjs [TICKET-ID]"
 ```
-Read `tempAgentOutput/ticket-context.md` for the acceptance criteria.
+Read `tempAgentOutput/ticket-context-[TICKET-ID].md` for the acceptance criteria.
 
 ---
 

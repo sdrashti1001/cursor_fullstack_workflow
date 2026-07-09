@@ -5,7 +5,7 @@
  * Zero dependencies — uses built-in Node.js https module.
  * 
  * Usage:  node scripts/fetch-jira.js ES-1838
- * Output: tempAgentOutput/ticket-context.md
+ * Output: tempAgentOutput/ticket-context-[TICKET-ID].md
  * 
  * Config: create .env.local in project root:
  *   JIRA_URL=https://your-org.atlassian.net
@@ -184,10 +184,10 @@ async function main() {
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   const md = buildMarkdown(issue, parentIssue, epicIssue);
-  const outPath = path.join(outDir, "ticket-context.md");
+  const outPath = path.join(outDir, `ticket-context-${issue.key}.md`);
   fs.writeFileSync(outPath, md, "utf8");
 
-  console.log(`\nDone → tempAgentOutput/ticket-context.md`);
+  console.log(`\nDone → tempAgentOutput/ticket-context-${issue.key}.md`);
   console.log(`\nTicket: ${issue.key} — ${issue.fields.summary}`);
   console.log(`Type:   ${issue.fields.issuetype?.name}`);
   if (parentIssue) console.log(`Parent: ${parentIssue.key} — ${parentIssue.fields.summary}`);

@@ -80,7 +80,17 @@ type errors and coverage ≥ 70% on changed files before moving on.
 
 ---
 
-## Step 5 — Self-review
+## Step 5 — Complexity check (before self-review)
+
+Run a Sonar cognitive-complexity scan (`sonar_scan` tool, or the project's
+`sonar-scanner`/lint script) on changed files. Any function or component at
+or above **cognitive complexity 15** must be refactored — extract branches
+into named helper functions above the parent — before moving to self-review.
+Rescan after refactoring to confirm it's clear.
+
+---
+
+## Step 6 — Self-review
 
 Report only **FLAG** and **FAIL** items with one line of evidence each.
 Check: Correctness, Quality, Robustness, Accessibility (aria-labels,
@@ -91,7 +101,7 @@ commented-out code, TODOs, secrets).
 
 ---
 
-## Step 6 — Git (none)
+## Step 7 — Git (none)
 
 No git commands of any kind — no branch creation, staging, commit, or push.
 Leave the working tree exactly as the file edits produced it. Branching,
@@ -99,9 +109,9 @@ staging, committing, and pushing are all done manually by the user.
 
 ---
 
-## Step 7 — PR description
+## Step 8 — Implementation summary
 
-Save to `tempAgentOutput/pr-description.md`:
+Save to `tempAgentOutput/implement-[TICKET-ID].md`:
 - **bugfix**: What | Root Cause | Fix Applied | Testing | Files | AC ✅
 - **new-feature**: What | How | Testing | Files changed | AC ✅
 - **pr-fixes**: ACCEPTED table | REJECTED table | Files | AC re-check
@@ -109,7 +119,7 @@ Save to `tempAgentOutput/pr-description.md`:
 
 ---
 
-## Step 8 — Retrospective + short report
+## Step 9 — Retrospective + short report
 
 Three actionable takeaways (one line each). If a takeaway is a reusable
 pattern (not ticket-specific), append it to `.cursor/rules/learnings.mdc`.
