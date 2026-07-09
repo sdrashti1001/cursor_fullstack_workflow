@@ -94,7 +94,9 @@ Rescan after refactoring to confirm it's clear.
 
 Report only **FLAG** and **FAIL** items with one line of evidence each.
 Check: Correctness, Quality, Robustness, Accessibility (aria-labels,
-keyboard nav, focus return), CC ≤ 15, Hygiene (no console.log,
+keyboard nav, focus return), CC ≤ 15, UI Copy (against
+`.cursor/context/ui-copy-rules.md` — cardinality, Oxford comma, empty
+state, error/warning wording, i18n), Hygiene (no console.log,
 commented-out code, TODOs, secrets).
 
 **Fix all FAILs and FLAGs before finishing.**

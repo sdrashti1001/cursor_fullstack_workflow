@@ -46,6 +46,10 @@ FLAG/FAIL in detail.
   utility? useEffect deps? CC > 15?
 - **FE**: testIds format? 4 states? submit guard? API data as-is?
 - **A11y**: aria-labels? keyboard nav? focus return?
+- **UI Copy**: against `.cursor/context/ui-copy-rules.md` — cardinality
+  (0/1/2+) handled? Oxford comma on 3+ lists? dedicated empty-state
+  copy (never "0 files")? error messages say what went wrong AND what to
+  do next? no hardcoded currency/date/number formats?
 - **Tests**: AC covered? user actions? 4 states? mocks match API?
 - **Security**: unsanitised HTML? tokens in localStorage? PII in props?
 - **Dead code**: unused exports/functions/components introduced by this
@@ -67,6 +71,10 @@ Also check:
   correct, other flows unaffected.
 - **Regression Analysis**: if this change reuses existing components or
   logic, verify those shared changes don't introduce regressions elsewhere.
+- **Bug Regression Test** (only if Classification.TYPE = bugfix, from a
+  `Plan Bug Fix` / `plan` plan file): a test exists that reproduces the
+  original bug and would fail without this fix. Root cause from the plan
+  actually addressed — not just the reported symptom.
 
 ---
 
