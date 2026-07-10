@@ -4,8 +4,8 @@ Entry point: `Plan Bug Fix [TICKET-ID]` (or `plan bug fix [TICKET-ID]`).
 
 Planning-only pass for a bug ticket — fetches ticket context, investigates
 root cause, and writes a fix plan. Makes **no source code changes**. Output
-is consumed by `Implement Bug Fix [TICKET-ID]`, and by `Review [TICKET-ID]`
-once the fix is implemented.
+is consumed by `Implement Bug Fix [TICKET-ID]`, and by
+`Review Bug Fix [TICKET-ID]` once the fix is implemented.
 
 ---
 
@@ -57,7 +57,7 @@ rather than letting the plan guess at one.
 
 Save everything gathered to `tempAgentOutput/plan-[TICKET-ID].md` (same
 file the generic `plan` skill produces, so `Implement Bug Fix` and
-`Review` can read it identically):
+`Review Bug Fix` can read it identically):
 
 ```markdown
 # Plan — [TICKET-ID]
@@ -88,3 +88,8 @@ Print: `📋 Plan saved → tempAgentOutput/plan-[TICKET-ID].md | Review it, the
 
 Do NOT implement. Do NOT create, edit, or delete any file outside
 `tempAgentOutput/`.
+
+---
+
+Downstream review for this ticket is `Review Bug Fix [TICKET-ID]` — the
+dedicated bug-fix review, not the generic `Review`.

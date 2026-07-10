@@ -99,5 +99,5 @@ Print short report:
 ✅ [TICKET-ID] done | Files: [list]
 Tests: PASS (coverage X%) | Type-check: PASS
 Changes are uncommitted — review and commit manually.
-→ Review [TICKET-ID]
+→ Review Bug Fix [TICKET-ID]
 ```
