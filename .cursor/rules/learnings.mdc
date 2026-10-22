@@ -1,43 +1,43 @@
 ---
-description: Accumulated cross-ticket learnings from retrospectives
+description: Accumulated reusable patterns and codebase traps. Appended by skills, read at plan time.
 globs: "**"
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Learnings
 
-Reusable takeaways captured from ticket retrospectives — patterns worth applying
-proactively on future tickets, not just noted once and forgotten.
+Reusable patterns and codebase traps discovered while working tickets. Appended
+by the retrospective step of `implement` and `fix-comments`.
 
-## How this file grows
+**Rules for entries:** one line each, generalisable (not ticket-specific), and
+prefixed with the area it applies to. Delete entries that stop being true.
 
-At the end of any skill's Retrospective step, if a takeaway describes a
-**reusable pattern** (would help on a *different* ticket, not just this one),
-append it below as one line under the right heading. Ticket-specific notes
-stay in the PR description — they do not belong here.
+<!-- Format:
+- **[area]** — [the trap, and what to do instead]
+-->
 
-Keep entries terse (one line, imperative or observational). If an entry is
-superseded or contradicted by a later one, remove the stale entry instead of
-stacking both.
-
-## FE
-
-<!-- e.g. "ConnectionCard-style components: always destructure API response, never spread it into local state." -->
-
-## BE
-
-<!-- e.g. "Pagination endpoints: default page size must match the FE's fetch hook default or the empty state flashes." -->
-
-## Cross-cutting / process
-
-<!-- e.g. "Tickets tagged 'MIS onboarding' almost always touch both the flag check AND the legacy fallback path — check both from the start." -->
-
-## Keeping instruction files in sync
-
-This project maintains AI coding assistant instructions in three places:
-
-- **VS Code / GitHub Copilot**: `.github/instructions/*.instructions.md`
-- **Cursor**: `.cursor/rules/*.mdc`
-- **Claude Code**: `CLAUDE.md`
-
-When modifying any instruction file, apply the same change to all three locations so they stay consistent.
+- **portal vs parent-portal** — React Router and Zustand major versions differ (5/3 vs 6/5). Never copy a router or store pattern across apps without checking the version.
+- **portal tests** — Components use `data-test-id`, but RTL `getByTestId` looks for `data-testid`; prefer accessible role/name queries in new tests.
+- **portal DateTimePicker** — Typed as `RefAttributes` only; for range mode, spread props as `Record<string, unknown>` (see `DateRangeFilter` for the same runtime pattern).
+- **portal SlideOver** — Drive `useSlideOver` with `isOpen` from parent selection (e.g. `account !== null`) and clear selection in `onCancel` so Escape and Close stay consistent.
+- **app-local alignment** — Patterns come from the owning app only (`portal/` vs `parent-portal/`). Run ALPG in `.cursor/context/app-local-alignment.md` before plan/implement/review/fix-comments done; cross-app copy is never default precedent.
+- **new modules** — Do not add a new container or helper-only file unless ≥2 production importers or ticket mandates a new route-level feature; prefer one feature `utils.ts` or inline single-use helpers.
+- **SS API** — New HTTP in `src/api/` via `fetcher('schools.*', …)` / laroute; no new `*ApiPath()` or `/v1/schools/` builders when a laroute key exists in the same app's `src/api/`.
+- **review honesty** — “Mostly aligned” or “matches repo drift” is not PASS for structure/API; ALPG FAIL blocks merge-ready review.
+- **prototypes** — HTML/Figma/prototype is layout intent only; components and filing must match the owning app's existing screens and `components/ui/`.
+- **portal API hooks** — Name hooks `useFeatureName` / `useUpdateThing` (no `Query`/`Mutation` suffix). Put the whole query/mutation inline in the hook — no separate `fetcher`/`mutation` wrapper functions, and do not export helpers used in only one place. Spread config as `config?.onSuccess` (see `parents-evenings.ts`), not a destructured-and-respread `restConfig`. Use `useQuery`/`useMutation` from `@tanstack/react-query` with typed `onError`; avoid `useQueryWithGlobalError` unless the feature already does. Do not add per-query `staleTime` when `main.jsx` defaults and mutations invalidate keys.
+- **portal money display** — Amounts from API are pence; display with `formatPrice(pence / 100)`. Agree a single money contract with BE (number in pence, or a ready string) — never a hybrid helper that branches on `*_formatted` strings.
+- **portal index/list pages — the URL *is* the query string** — Pass `Object.fromEntries(searchParams)` straight into the list hook (`useThing(params, { enabled })`), exactly like `AllPurchases.tsx` / `parents-evenings.ts`. The index owns **no** filter algebra: no `build*QueryParams`, no cross-field rules (`type=unknown → linked=0`), no re-parsing page/limit, no forced default params. Each filter control writes the **API's own param** (`filter[linked]=0`, `filter[type]=pupil`) — the filter bar speaks the API's language, the index does not translate. If you reach for a mapper in the index, stop: the UI-shaped value belongs in the filter bar instead.
+- **portal — no single-field util functions** — Never wrap a single field access in a named helper (`xDisplayName(a) => a.full_name`). Read the field inline, or use a Tailwind class / standard JS (`capitalize`) for formatting. A feature `utils.ts` of one-liners is a smell — delete it and inline.
+- **portal nav flags** — Destructure `school?.config?.parents_area || {}` in nav maps and test the boolean inline over a one-off `isXAvailable()` helper when the rule is a simple hide flag.
+- **portal placeholder UI** — Do not ship empty “settings” or “additional options” shells; omit the control until there is real behaviour. It can be added later.
+- **disabled + tooltip over toast** — When an action is invalid for the current selection, disable the button with a tooltip explaining why, rather than letting the click fire and showing an error toast.
+- **list UI colocation** — Table + pagination + empty state live in the one list/accounts component, not split into a single-consumer `*Table.tsx` beside it.
+- **do not touch shared infra for one feature** — No edits to `services/fetcher.ts` (or other platform-shared files) to make one feature work; if you think you need to, flag it and ask — it is almost never the right layer.
+- **portal feature folders** — Only `index`/`types`/`utils` live at a feature root; every other file (components, hooks) goes under `components/`. Delete unused exports; inline helpers used in one place.
+- **portal api modules** — Keep `src/api/*` to a list call, a detail call, and the action calls the feature needs — no more. Use laroute keys, never path-building helpers. **Params are the component's job:** the hook takes `params` and sends them as-is; it never builds, normalises, defaults, or filters them, so other features can reuse it. Filter/page/sort come from the calling component's URL.
+- **portal visuals** — No hardcoded hex colours; use the app's Tailwind tokens (off-palette badges/alerts read as "not our style" / "AI-generated"). Reuse existing badge/table/component styles; match the reference screen's table **variant** (the standard table is not for white backgrounds). Do not build UI absent from the prototype (extra icons, explanatory paragraphs) — flag prototype improvements to the designer, don't ship them unasked.
+- **portal modals** — Dropdowns/popovers inside a modal, or on a last row, must render **outside** their container (portal), never clipped.
+- **portal page header** — Use the shared Header + actions pattern (ref `Payments/Vouchers/index.tsx`), not a custom per-page header.
+- **coverage gate** — Meet the PR's **CI** coverage threshold on new code — it is higher than 70% and **varies by area** (80% and 95% seen on portal). Read the PR checks; never assume a flat 70%.
+- **test names** — A test's description must match what it actually asserts; rename it when the asserted behaviour changes (a name saying "with X" that asserts no-X is a bug).

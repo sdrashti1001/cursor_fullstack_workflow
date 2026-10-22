@@ -1,102 +1,119 @@
 ---
-description: Project rules — coding standards, patterns, testing, security, token efficiency
+description: Global project rules — honesty, hygiene, reuse, scope, quality gates, monorepo map, git
 globs: "**"
 alwaysApply: true
 ---
 
-# Project Rules
+# Project Rules · School Spider
 
-The ticket context (subtask, parent task, and epic) is provided in conversation — either fetched by the orchestrator or pasted manually. Do not break task-level acceptance criteria.
+Monorepo. Frontend work happens in `portal/`, `parent-portal/`, `pupil-portal/`,
+`teacher-app/`. Backend is `api/` (Laravel — see `.cursor/rules/laravel-api.mdc`).
+
+**You do frontend only.** Backend changes are never implemented here — they are
+written up as requirements for the BE team. See the `plan` skill.
 
 ## Honesty
+
 - List every assumption. Flag every judgment call.
-- Not certain something exists? Say so — never invent.
-- Stuck or looping? Say so immediately.
+- Not certain something exists? Say so — never invent a file, function, or export.
+- Stuck or looping? Say so immediately: what you know, where you're stuck, what
+  you need.
 
 ## Hygiene
+
 - No `console.log`, commented-out code, TODOs, or debug artifacts in final output.
-- No sensitive data, tokens, or secrets in logs, responses, or client-side code.
-- Do not create extra files (PLAN.md, NOTES.md, TODO.md) unless explicitly asked.
-- Place temporary output files in `tempAgentOutput/` (git-ignored).
+- No secrets or tokens in logs, responses, or client-side code.
+- Do not create extra files (PLAN.md, NOTES.md, TODO.md) unless asked.
+- Temp output → `tempAgentOutput/`. Never the repo root.
+
+## Reuse first
+
+- Grep the codebase before writing any new utility, hook, component, or constant.
+- Check `components/ui/` and `components/` before creating a component.
+- Use existing types. No `any`, no `@ts-ignore`, no `as unknown as X`.
+- Only create new if nothing similar exists — name what you searched for.
 - Prefer `String#replaceAll()` over `String#replace()`.
 
-## Reuse First
-- Search the codebase before writing any new utility, hook, function, constant, or component.
-- Use existing TypeScript types. No `any`. No `@ts-ignore`.
-- Only create new if nothing similar exists — explain why.
+## App-local alignment (blocking)
+
+Work in `portal/` → patterns **only** from `portal/`. Same for `parent-portal/`,
+`pupil-portal/`, `teacher-app/`. Never treat another app or generic docs as the
+default precedent.
+
+Before plan sign-off, implement finish, or review PASS: run **ALPG** in
+`.cursor/context/app-local-alignment.md` (per owning app). Any ALPG **FAIL**
+blocks “done” until fixed. “Mostly aligned” or “matches repo drift” is not a PASS.
 
 ## Scope
+
 - Only touch files in scope for this ticket.
-- Spotted an unrelated issue? Add `// TODO:` comment — do not fix it.
+- Unrelated issue spotted? Add `// TODO:` and move on — do not fix it.
+- Never redesign UI the ticket did not ask about.
 
-## Patterns
-- Match the project's existing patterns exactly.
-- Prefer the simplest solution.
-- Circuit breaker: if same area fixed 2+ times and outcome toggles → STOP, diagnose.
+## Circuit breaker
 
-## Terminal / Shell
-- Always run commands using `cmd` (`cmd /c "..."`), never PowerShell.
+If the same area has been changed **2+ times and the outcome toggles** (fix A
+breaks B, fixing B breaks A) → **STOP**. Do not write more code. State what
+you've tried, what each attempt changed, and what you think the real constraint
+is. Ask before continuing.
+
+## Reading discipline (token cost)
+
+- **Grep before you read.** Never open a file to find out whether it's relevant.
+- Read **ONE** pattern file per concern, not two or three.
+- Never re-read a file already in this conversation.
+- Never re-derive classification, constraints, root cause, or a design spec that
+  an artifact in `tempAgentOutput/` already contains.
+
+## Quality gates
+
+Run in this order before any self-review. All are blocking.
+
+1. **Tests + lint + type-check** — per owning app, see `monorepo-map.md`.
+
+2. **Sonar — cognitive complexity.** Every function and React component must
+   stay **below cognitive complexity 15** (`sonarjs/cognitive-complexity`).
+   Scan changed files. Anything at or above 15 gets refactored: extract branches
+   into **named helper functions above the parent** — not inline comments.
+   Rescan after refactoring to confirm it's clear.
+
+   Patterns that inflate CC: ternaries nested inside loops or other ternaries;
+   long `if / else if` chains inside `useMemo` / `useCallback` (extract as a
+   module-level pure function); sort comparators with multiple guard `if`s
+   (extract a named comparator).
+
+3. **Snyk — security at inception.** Run `snyk_code_scan` on new first-party
+   code. Fix anything found using the Snyk result context, then **rescan** to
+   confirm the fix introduced nothing new. Repeat until clean.
+   If the Snyk tool is unavailable this session, say so once — do not silently
+   skip it.
+
+## Monorepo commands
+
+Always run from the owning app directory. Full map:
+`.cursor/context/monorepo-map.md`.
+
+```
+cd portal && yarn test src/path/File.test.tsx
+```
+
+Windows shell: wrap as `cmd /c "..."`. Never PowerShell.
 
 ## Git
-- Branch: `[type]/[ticket-id]-short-desc`.
-- Commit: imperative, present tense, ≤72 chars, include ticket ID.
-- Never stage or commit `.env*`, `.gitignore`, or `.cursor/mcp.json` files.
 
-## Complexity
-- Every function and React component below **Cognitive Complexity 15**.
-- Exceeds limit → extract branches into named helper functions above the parent.
+- Branch: `[type]/[TICKET-ID]-short-desc`
+- Commit: imperative, present tense, ≤72 chars, includes ticket id
+- **Agents run no git commands.** No branch, stage, commit, or push — ever.
+  The user does git manually.
 
-## Token Efficiency
-- Use grep/search to locate relevant code BEFORE reading entire files.
-- Read only the files you will modify, plus ONE existing file as a pattern reference.
-- Do not re-read files already in this conversation.
-- Keep intermediate output terse — bullet points, not paragraphs.
-- In self-review, report only FLAG and FAIL items.
-- Do not echo back large blocks of code already in context.
+## Reference files (read on demand, not by default)
 
-## FE Component Standards
-- testId format: `[feature]-[component]-[element]` on interactive elements and major containers.
-- Use API response data as-is — never redefine or duplicate backend values.
-- Handle loading, error, empty, and success states for every data-fetch and submission.
-- useEffect must clean up subscriptions, timers, and event listeners.
-- Disable submit buttons while in-flight.
-
-## BE Standards
-- Validate input at the boundary (route/controller), never trust client-sent data downstream.
-- Enforce authentication and authorization on every route — never assume a caller checked it.
-- Response shape matches the agreed contract exactly — no leaking internal fields, stack traces, or ORM entities.
-- Avoid N+1 queries — batch or join instead of looping over records to fetch related data.
-- Migrations must be backward-compatible and reversible; never a breaking change deployed in the same step as the code that depends on it.
-- Log failure paths with enough context to debug — never log PII, tokens, or secrets.
-- Wrap multi-step writes in transactions where partial failure would leave inconsistent state.
-
-## Accessibility
-- `aria-label` on every interactive element without visible text — must describe action AND target.
-- All interactions keyboard-navigable.
-- Focus returns to trigger after modal/drawer/popover closes.
-- `role="alert"` on dynamically injected error/success banners.
-
-## Testing
-- Mock all hooks that call fetch/useSWR.
-- `afterEach`: `cleanup()` + `vi.clearAllMocks()`. 5000ms timeout on every test.
-- Mocks must match the actual API response shape.
-- After modifying source files, run affected tests. Fix failures.
-- `npx tsc --noEmit --project tsconfig.app.json` — zero type errors before done.
-- Coverage ≥ 70% on changed files. Run `npx vitest run --pool=forks --coverage` to confirm.
-
-## UI Copy
-When writing user-facing text, read `.cursor/context/ui-copy-rules.md` for cardinality, Oxford comma, empty state, banner, and i18n rules. Key principles: never hardcode singular/plural next to a dynamic count; zero count gets a dedicated empty-state message; error messages say what went wrong AND what to do next.
-
-## Security
-- Run snyk_code_scan for new or modified first-party code. Fix issues, rescan, repeat until clean.
-
-## Never commit any code without explicitly asking to do so.
-
-## Learnings
-Read `.cursor/rules/learnings.mdc` for accumulated cross-ticket patterns before starting non-trivial work. Append reusable takeaways there at the end of a ticket's retrospective.
-
-## Keeping Instruction Files in Sync
-When modifying instruction files, apply the same change to all three locations:
-- `.github/instructions/*.instructions.md`
-- `.cursor/rules/*.mdc`
-- `CLAUDE.md`
+| File | Read when |
+|------|-----------|
+| `.cursor/context/monorepo-map.md` | choosing an app, build/test/scan command |
+| `.cursor/context/frontend-conventions.md` | writing or reviewing React/TS |
+| `.cursor/context/app-local-alignment.md` | plan, implement, review — ALPG gate |
+| `.cursor/context/test-conventions.md` | writing or reviewing tests |
+| `.cursor/context/design-workflow.md` | ticket has a Figma link, prototype URL, or image |
+| `.cursor/context/ui-copy-rules.md` | diff contains user-facing strings |
+| `.cursor/rules/learnings.mdc` | start of a plan |

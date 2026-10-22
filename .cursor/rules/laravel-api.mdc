@@ -1,0 +1,6 @@
+---
+description: This rule applies when modifying anyhing in the /api folder
+alwaysApply: false
+---
+
+use the file located api/.cursor/rules/laravel-api.mdc for api related rules.

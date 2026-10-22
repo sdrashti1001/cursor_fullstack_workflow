@@ -107,7 +107,7 @@ chat with `Implement [TICKET-ID]`. See that file's "Handoff" section.
 - Mocks must match the actual API response shape.
 - After modifying source files, run affected tests. Fix failures.
 - `npx tsc --noEmit --project tsconfig.app.json` — zero type errors before done.
-- Coverage ≥ 70% on changed files. Run `npx vitest run --pool=forks --coverage` to confirm.
+- Coverage must meet the **PR's CI gate on new code**, which is higher than 70% and **varies by area** (80% and 95% have both been required on portal). Read the PR's own checks for the number that applies — never assume a flat 70%. Run `npx vitest run --pool=forks --coverage` to confirm locally.
 - **Before considering the task complete, run the full test suite** — not only affected tests. Use `npm run testCi` (matches CI, includes coverage) or `npm run test -- run`.
 
 ## UI Copy
